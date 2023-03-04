@@ -1,0 +1,10 @@
+Primeira linha: M L l
+  M = cardinalidade do conjunto M
+  L = cardinalidade do conjunto L
+  l = constante l
+
+Demais linhas: M*L valores (com quebra de linha arbitrária) com as distâncias
+  Primeiros L valores: distância do 1o elemento de M dos elementos em L
+  Segundos  L valores: distância do 2o elemento de M dos elementos em L
+  ...
+  Últimos   L valores: distância do último elemento de M dos elementos em L
