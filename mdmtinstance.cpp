@@ -166,11 +166,18 @@ int MDMTInstance::tabuSearch(int iterations, int tabu_tenure, int sm_size){
 
         for(int j = 1; j < L_size; j++){
             //Try moving to the left
-            if((i-j < 0) || solution[i-j] == 1){
+            int left_i;
+            if(j > i){
+                left_i = L_size - (j-i);
+            }
+            else{
+                left_i = i-j;
+            }
+            
+            if(solution[left_i] == 1){
                 break;   
             }
             else{
-                int left_i = i-j;
                 solution[left_i] = 1;
                 solution[i] = 0;
                 //Get the function value for this selection
@@ -207,11 +214,15 @@ int MDMTInstance::tabuSearch(int iterations, int tabu_tenure, int sm_size){
         }
         for(int j = 1; j < L_size; j++){
             //Try moving to the right
-            if((i+j >= L_size) || solution[i+j] == 1){
-                break;
+            int right_i = j+i;
+            if(right_i >= L_size){
+                right_i = right_i - L_size;
+            }
+            
+            if(solution[right_i] == 1){
+                break;   
             }
             else{
-                int right_i = i+j;
                 solution[right_i] = 1;
                 solution[i] = 0;
                 //Get the function value for this selection
