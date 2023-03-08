@@ -5,6 +5,10 @@
 
 #define DEBUG
 
+#ifdef DEBUG
+int CURRENT_ITERATION;
+#endif
+
 MDMTInstance::MDMTInstance(wchar_t* filename){
 
     std::wifstream inst_stream(filename);
@@ -78,6 +82,11 @@ int MDMTInstance::tabuSearch(int iterations, int tabu_tenure, int sm_size){
     int moved_idx;
 
     for(int i = 0; i < iterations; i++){
+
+        #ifdef DEBUG
+        CURRENT_ITERATION = i;
+        #endif
+
         updateTabu();
         moved_idx = moveToBestNeighbour();
         // If moved to a neighbour, add the moved vertix idx to tabu
@@ -125,7 +134,7 @@ inline int MDMTInstance::moveToBestNeighbour(){
                 best_movement = -1;
 
                 #ifdef DEBUG
-                std::cout << bestValue << std::endl;
+                std::cout << "It " << CURRENT_ITERATION << " - " << bestValue << std::endl;
                 #endif
 
             }
@@ -161,6 +170,11 @@ inline int MDMTInstance::moveToBestNeighbour(){
                 bestValue = aux;
                 best_idx = i;
                 best_movement = 1;
+
+                #ifdef DEBUG
+                std::cout << "It " << CURRENT_ITERATION << " - " << bestValue << std::endl;
+                #endif
+
             }
             else{
                 //Check if movement to this vertix is tabu
