@@ -1,6 +1,5 @@
 #include "mdmtinstance.h"
 #include <iostream>
-#include <random>
 #include <time.h>
 
 #define DEBUG
@@ -125,29 +124,14 @@ void MDMTInstance::generateInitialSolution(){
     for(int i = 0; i < L_size; i++){
         solution[i] = 0;
     }
-    
-    // srand(time(NULL));
-    // //Generate random solution
-    // int random_assignments = l;
-    // int random_idx;
-    // while(random_assignments > 0){
-    //     random_idx = rand() % L_size;
-    //     if(solution[random_idx] == 0){
-    //         solution[random_idx] = 1;
-    //         random_assignments--;
-    //     }
-    // }
+
     //Set an element to one every x steps
     int step = (int) floor(L_size / l); 
     std::cout << step << std::endl;
     for(int i = 0; i < (L_size - (L_size % step)); i+= step){
         solution[i] = 1;
     }
-    // // Initialize all elements around the center
-    // int left_end = (L_size - l - 1) / 2;
-    // for(int i=left_end; i < L_size; i++){
-    //     solution[i] = 1;
-    // }    
+
 }
 
 // Moves to the best neighbour in the partition (best value obtained by moving switching the values of two vertices
