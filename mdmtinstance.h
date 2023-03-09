@@ -11,12 +11,14 @@ class MDMTInstance{
 
     float* distances;
     int* solution;
-    int* short_term_memory;
 
     float globalBest = 0;
     float curBest = 0;
     int cur_iteration = 0;
 
+    int* short_term_memory;
+    
+    // Tabu search parameters
     int tenure;
     int patience;
 
@@ -42,17 +44,5 @@ class MDMTInstance{
     void tabuSearch(int iterations);
 
 };
-
-// class MDMTSolution{
-//     int* solution;
-
-//     MDMTSolution(size_t size);
-//     ~MDMTSolution();
-
-//     public:
-//     void updateCurrentNeighbours();
-
-
-// }
 
 #endif
