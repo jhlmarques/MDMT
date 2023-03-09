@@ -11,30 +11,36 @@ class MDMTInstance{
 
     float* distances;
     int* solution;
-    float bestValue = 0;
     int* short_term_memory;
-    int short_term_memory_length;
-    // Index of the oldest element of the short term memory
-    int stm_oldest = 0;
 
+    float globalBest = 0;
+    float curBest = 0;
+    int cur_iteration = 0;
+
+    int tenure;
+    int patience;
+
+    
     // Essential functions for tabu search
-    inline int moveToBestNeighbour();
-    inline float calculateCurrentValue();
-    inline int isInTabu(int vertix_idx);
-    inline void addToTabu(int vertix_idx, int tenure);
-    inline void updateTabu();
+    void generateInitialSolution();
+    void moveToBestNeighbour();
+    void moveToBestNeighbourPartition();
+    float calculateCurrentValue();
+    bool isTabu(int vertix_idx);
+    void addToTabu(int vertix_idx);
 
     public:
-    MDMTInstance(wchar_t* filename);
+    MDMTInstance(wchar_t* filename, int tenure, int patience);
     ~MDMTInstance();
 
     // Getters
     int getM_size();
     int getL_size();
     int getl_size();
-    float getBestValue();
+    float getglobalBest();
 
-    int tabuSearch(int iterations, int tabu_tenure, int sm_size);
+    void tabuSearch(int iterations);
+
 };
 
 // class MDMTSolution{

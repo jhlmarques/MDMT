@@ -6,11 +6,11 @@
 #define DEBUG
 
 #ifdef DEBUG
-int CURRENT_ITERATION;
-bool BEST_VALUE_CHANGED;
+//#define SHOW_STM
+#define SHOW_SOLUTION_VECTOR
 #endif
 
-MDMTInstance::MDMTInstance(wchar_t* filename){
+MDMTInstance::MDMTInstance(wchar_t* filename, int tenure, int patience){
 
     std::wifstream inst_stream(filename);
     if(!inst_stream){
@@ -23,18 +23,28 @@ MDMTInstance::MDMTInstance(wchar_t* filename){
     
     solution = new int [L_size];
     distances = new float [M_size * L_size];
-
+    
     for(int i = 0; i < M_size; i++){
         for(int j = 0; j < L_size; j++){
             inst_stream >> distances[i*M_size + j];
         }
     }
 
+    short_term_memory = new int [L_size];
+    for(int i = 0; i < L_size; i++){
+        short_term_memory[i] = 0;
+    }
+
+    this->patience = patience;
+    this->tenure = tenure;
+
+
 }
 
 MDMTInstance::~MDMTInstance(){
     delete[] solution;
     delete[] distances;
+    delete[] short_term_memory;
 }
 
 int MDMTInstance::getM_size(){
@@ -49,30 +59,74 @@ int MDMTInstance::getl_size(){
     return l;
 }
 
-float MDMTInstance::getBestValue(){
-    return bestValue;
+float MDMTInstance::getglobalBest(){
+    return globalBest;
 }
 
 
-// Busca tabu
-int MDMTInstance::tabuSearch(int iterations, int tabu_tenure, int sm_size){
 
-    //Index i: index of a vertix
-    //Index i+1: tabu tenure of said vertix
-    short_term_memory = new int [sm_size*2];
-    short_term_memory_length = sm_size;
-    for(int i = 0; i < sm_size * 2; i++){
-        short_term_memory[i] = 0;
+// Busca tabu
+void MDMTInstance::tabuSearch(int iterations){
+
+    generateInitialSolution();
+
+    int iterations_since_last_improvement = 0;
+    bool used_partition = false;
+
+    for(cur_iteration = 0; cur_iteration < iterations; cur_iteration++){
+
+        // If there's been no changes to the best global value
+        if(iterations_since_last_improvement > patience){
+            moveToBestNeighbour();
+            used_partition = false;
+        }
+        else{
+            moveToBestNeighbourPartition();
+            used_partition = true;
+        }
+
+        if(curBest > globalBest){
+            globalBest = curBest;
+            iterations_since_last_improvement = 0;
+        }
+        else{
+            iterations_since_last_improvement++;
+        }
+    
+        #ifdef DEBUG
+        // if(BEST_VALUE_CHANGED || ((i % 100) == 0)){
+        system("cls");
+        std::cout << "It " << cur_iteration << " - " << globalBest << "(Cur " << curBest << ')' << std::endl;
+        std::cout << "Neighbourhood function: " << (used_partition ? "Partition" : "Global")<< std::endl;
+        
+        #ifdef SHOW_SOLUTION_VECTOR
+        for(int j = 0; j < L_size; j++){
+            std::cout << solution[j];
+        }
+        std::cout << std::endl;
+        #endif
+        #ifdef SHOW_STM
+        std::cout << "Short Term Memory:" << std::endl;
+        for(int j = 0; j < short_term_memory_length*2; j+=2){
+            std::cout << '|' << short_term_memory[j] << ':' << short_term_memory[j+1];
+        }
+        #endif
+        // }
+        #endif
+
     }
 
+}
 
+
+// Generates an initial solution
+void MDMTInstance::generateInitialSolution(){
     //Fill solution with zeros
     for(int i = 0; i < L_size; i++){
         solution[i] = 0;
     }
     
-    srand(time(NULL));
-
+    // srand(time(NULL));
     // //Generate random solution
     // int random_assignments = l;
     // int random_idx;
@@ -85,192 +139,145 @@ int MDMTInstance::tabuSearch(int iterations, int tabu_tenure, int sm_size){
     // }
     //Set an element to one every x steps
     int step = (int) floor(L_size / l); 
-    int elements_added = 0;
     std::cout << step << std::endl;
-    for(int i = 0; i < (L_size - L_size%4); i+= step){
-        elements_added++;
+    for(int i = 0; i < (L_size - (L_size % step)); i+= step){
         solution[i] = 1;
     }
-    if(elements_added != l){
-        std::cout << elements_added << std::endl;
-        throw std::runtime_error("Something went wrong...");
-    }
-
-    #ifdef DEBUG
-    for(int i = 0; i < L_size; i++){
-        std::cout << solution[i] << ' ';
-    }
-    std::cout << std::endl;
-    #endif
-
-    int moved_idx;
-
-    for(int i = 0; i < iterations; i++){
-
-        #ifdef DEBUG
-        CURRENT_ITERATION = i;
-        #endif
-
-        updateTabu();
-        moved_idx = moveToBestNeighbour();
-        // If moved to a neighbour, add the moved vertix idx to tabu
-        if(moved_idx > -1){
-            addToTabu(moved_idx, tabu_tenure);
-        }
-        else{
-            std::cout << i << " : No movement!" << std::endl;
-        }
-    
-        #ifdef DEBUG
-        // if(BEST_VALUE_CHANGED || ((i % 100) == 0)){
-            system("cls");
-            std::cout << "It " << i << " - " << bestValue << std::endl;
-            for(int j = 0; j < L_size; j++){
-                std::cout << solution[j];
-            }
-            std::cout << std::endl;
-            std::cout << "Short Term Memory:" << std::endl;
-            for(int j = 0; j < short_term_memory_length*2; j+=2){
-                std::cout << '|' << short_term_memory[j] << ':' << short_term_memory[j+1];
-            }
-
-
-        // }
-        #endif
-
-    }
-
-    std::cout << "End!" << std::endl;
-    delete[] short_term_memory;
-
-    return 0;
+    // // Initialize all elements around the center
+    // int left_end = (L_size - l - 1) / 2;
+    // for(int i=left_end; i < L_size; i++){
+    //     solution[i] = 1;
+    // }    
 }
 
-// Moves the solution to the best possible neighbour. Returns the index of the latest
-// changed vertix
- int MDMTInstance::moveToBestNeighbour(){
-    #ifdef DEBUG
-    BEST_VALUE_CHANGED = false;
-    #endif
-
-    float best = -1;
-    int best_idx;
-    int best_movement;
-
+// Moves to the best neighbour in the partition (best value obtained by moving switching the values of two vertices
+// with values 1 and 0 with no ones in between)
+void MDMTInstance::moveToBestNeighbourPartition(){
     float aux;
+    int old_idx;
+    int new_idx = -1;
 
+    curBest = 0;
+
+    int left_idx, right_idx;
     for(int i = 0; i < L_size; i++){
         if(solution[i] != 1){
             continue;
         }
 
-        for(int j = 1; j < L_size; j++){
-            //Try moving to the left
-            int left_i;
-            if(j > i){
-                left_i = L_size - (j-i);
-            }
-            else{
-                left_i = i-j;
-            }
+        // Check to the left
+        solution[i] = 0;
+        for(int j = 1; j < i; j++){
+            left_idx = i-j;
+            if((left_idx < 0) || (solution[left_idx] == 1)) break;
             
-            if(solution[left_i] == 1){
-                break;   
+            solution[left_idx] = 1;
+            aux = calculateCurrentValue();
+            // Aspiration criteria: If this solution is better than the global solution, tabu status is ignored
+            if((aux > globalBest) || (!isTabu(left_idx) && aux > curBest)){
+                curBest = aux;
+                old_idx = i;
+                new_idx = left_idx;                
             }
-            else{
-                solution[left_i] = 1;
-                solution[i] = 0;
-                //Get the function value for this selection
-                aux = calculateCurrentValue();
-                //Aspiration criteria: ignore tabu if a better value was found
-                if(aux > bestValue){
-                    best = aux;
-                    bestValue = aux;
-                    best_idx = i;
-                    best_movement = -j;
 
-                    #ifdef DEBUG
-                    BEST_VALUE_CHANGED = true;
-                    #endif
-
-                }
-                else{
-                    //Check if movement to this vertix is tabu
-                    if(!isInTabu(left_i)){
-                        //If not, check if this neighbour is better than
-                        //the others
-                        if(aux > best){
-                            best = aux;
-                            best_idx = i;
-                            best_movement = -j;
-                        }
-                    }
-                }
-
-                //Undo move
-                solution[left_i] = 0;
-                solution[i] = 1;
-            }
+            solution[left_idx] = 0;
         }
-        for(int j = 1; j < L_size; j++){
-            //Try moving to the right
-            int right_i = j+i;
-            if(right_i >= L_size){
-                right_i = right_i - L_size;
-            }
+
+        //Check to the right
+        for(int j = 1; j < L_size - i; j++){
+            right_idx = i+j;
+            if((right_idx == L_size) || (solution[right_idx] == 1)) break;
             
-            if(solution[right_i] == 1){
-                break;   
+            solution[right_idx] = 1;
+            aux = calculateCurrentValue();
+            // Aspiration criteria: If this solution is better than the global solution, tabu status is ignored
+            if((aux > globalBest) || (!isTabu(right_idx) && aux > curBest)){
+                curBest = aux;
+                old_idx = i;
+                new_idx = right_idx;                
             }
-            else{
-                solution[right_i] = 1;
-                solution[i] = 0;
-                //Get the function value for this selection
-                aux = calculateCurrentValue();
-                //Aspiration criteria: ignore tabu if a better value was found
-                if(aux > bestValue){
-                    best = aux;
-                    bestValue = aux;
-                    best_idx = i;
-                    best_movement = j;
 
-                    #ifdef DEBUG
-                    BEST_VALUE_CHANGED = true;
-                    #endif
-
-                }
-                else{
-                    //Check if movement to this vertix is tabu
-                    if(!isInTabu(right_i)){
-                        //If not, check if this neighbour is better than
-                        //the others
-                        if(aux > best){
-                            best = aux;
-                            best_idx = i;
-                            best_movement = j;
-                        }
-                    }
-                }
-
-                //Undo move
-                solution[right_i] = 0;
-                solution[i] = 1;
-            }
+            solution[right_idx] = 0;
         }
-    }
-
-    // If there's no avaiable neighbour, return a special code (-1)
-    if(best == -1){
-        return -1;
+        solution[i] = 1;
     }
 
     // Move to the best neighbour
-    solution[best_idx + best_movement] = 1;
-    solution[best_idx] = 0;
-
-    return best_idx + best_movement;
+    if(new_idx > -1){
+        solution[new_idx] = 1;
+        solution[old_idx] = 0;
+        addToTabu(new_idx);
+    }
 
 }
+
+
+
+// Moves the solution to the best possible neighbour, considering all possible swaps
+void MDMTInstance::moveToBestNeighbour(){
+    float aux;
+    int old_idx;
+    int new_idx = -1;
+
+    curBest = 0;
+
+    int left_idx, right_idx;
+    for(int i = 0; i < L_size; i++){
+        if(solution[i] != 1){
+            continue;
+        }
+
+        solution[i] = 0;
+
+        // Check to the left
+        solution[i] = 0;
+        for(int j = 1; j < i; j++){
+            left_idx = i-j;
+            if(solution[left_idx] == 1) continue;
+            
+            solution[left_idx] = 1;
+            aux = calculateCurrentValue();
+            // Aspiration criteria: If this solution is better than the global solution, tabu status is ignored
+            if((aux > globalBest) || (!isTabu(left_idx) && aux > curBest)){
+                curBest = aux;
+                old_idx = i;
+                new_idx = left_idx;                
+            }
+
+            solution[left_idx] = 0;
+        }
+
+        //Check to the right
+        for(int j = 1; j < L_size - i; j++){
+            right_idx = i+j;
+            if(right_idx == L_size) break;
+            if(solution[right_idx] == 1) continue;
+            
+            solution[right_idx] = 1;
+            aux = calculateCurrentValue();
+            // Aspiration criteria: If this solution is better than the global solution, tabu status is ignored
+            if((aux > globalBest) || (!isTabu(right_idx) && aux > curBest)){
+                curBest = aux;
+                old_idx = i;
+                new_idx = right_idx;                
+            }
+
+            solution[right_idx] = 0;
+        }
+
+        solution[i] = 1;
+    }
+
+    // Move to the best neighbour
+    if(new_idx > -1){
+        solution[new_idx] = 1;
+        solution[old_idx] = 0;
+        addToTabu(new_idx);
+    }
+
+}
+
+
 
 // Calculate the value of the current instance
  float MDMTInstance::calculateCurrentValue(){
@@ -292,31 +299,15 @@ int MDMTInstance::tabuSearch(int iterations, int tabu_tenure, int sm_size){
     return sum_of_min_dists;
 }
 
+
+
 // Checks if this vertix is tabu
-inline int MDMTInstance::isInTabu(int vertix_idx){
-    for(int i = 0; i < short_term_memory_length*2; i+=2){
-        if(short_term_memory[i] == vertix_idx){
-            return true;
-        }
-    }
-    return false;
+ bool MDMTInstance::isTabu(int vertix_idx){
+    return short_term_memory[vertix_idx] < cur_iteration;
 }
 
-// Put this vertix in tabu, overwriting the oldest tabu vertix
-inline void MDMTInstance::addToTabu(int vertix_idx, int tenure){
-    short_term_memory[stm_oldest*2] = vertix_idx;
-    short_term_memory[stm_oldest*2 + 1] = tenure;
-    stm_oldest = (stm_oldest+1 > short_term_memory_length) ? 0 : stm_oldest+1;
-}
 
-// Update the tabu status of the vertices in the tabu list
- void MDMTInstance::updateTabu(){
-    for(int i = 0; i+1 < 2*short_term_memory_length; i+=2){
-        if(short_term_memory[i+1] > 0){
-            short_term_memory[i+1]--;
-        }
-        else{
-            short_term_memory[i] = -1;
-        }
-    }
+// Set the iteration upon which this vertix will be considered non-tabu
+ void MDMTInstance::addToTabu(int vertix_idx){
+    short_term_memory[vertix_idx] = cur_iteration + tenure;
 }
