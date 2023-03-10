@@ -1,10 +1,18 @@
 #ifndef MDMTINSTANCE_H
 #define MDMTINSTANCE_H
 #include <fstream>
+#include <string>
+#include <sstream>
+#include <time.h>
+
 
 class MDMTInstance{
 
     private:
+    const wchar_t* input_filename;
+    int tabu_runtime = 0;
+    std::wstring ending_reason;
+
     int M_size;
     int L_size;
     int l;
@@ -22,7 +30,6 @@ class MDMTInstance{
     int tenure;
     int patience;
 
-    
     // Essential functions for tabu search
     void generateInitialSolution();
     void moveToBestNeighbour();
@@ -32,14 +39,18 @@ class MDMTInstance{
     void addToTabu(int vertix_idx);
 
     public:
-    MDMTInstance(wchar_t* filename, int tenure, int patience);
+    MDMTInstance(const wchar_t* filename, int tenure, int patience);
     ~MDMTInstance();
+    
+    void writeResultsToFile();
 
     // Getters
     int getM_size();
     int getL_size();
     int getl_size();
     float getglobalBest();
+    std::wstring getEndingReason();
+
 
     void tabuSearch(int iterations);
 

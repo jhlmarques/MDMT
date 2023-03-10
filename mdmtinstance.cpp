@@ -1,21 +1,25 @@
 #include "mdmtinstance.h"
-#include <iostream>
-#include <time.h>
 
-#define DEBUG
 
+#define MAX_GLOBAL_NEIGHBOUR_SEARCHES 3
+
+
+//#define DEBUG
 #ifdef DEBUG
+#include <iostream>
 //#define SHOW_STM
 #define SHOW_SOLUTION_VECTOR
 #endif
 
-MDMTInstance::MDMTInstance(wchar_t* filename, int tenure, int patience){
+MDMTInstance::MDMTInstance(const wchar_t* filename, int tenure, int patience){
 
     std::wifstream inst_stream(filename);
     if(!inst_stream){
         throw std::runtime_error("Could not open file");
     }
 
+    input_filename = filename;
+    
     inst_stream >> M_size;
     inst_stream >> L_size;
     inst_stream >> l;
@@ -62,6 +66,31 @@ float MDMTInstance::getglobalBest(){
     return globalBest;
 }
 
+std::wstring MDMTInstance::getEndingReason(){
+    return ending_reason;
+}
+
+
+void MDMTInstance::writeResultsToFile(){
+    std::wstring output_filename = input_filename;
+    size_t ext_pos = output_filename.find_last_of('.');
+    output_filename.replace(ext_pos, output_filename.size(), L".out");
+    
+    std::wofstream out(output_filename);
+    std::wostringstream data;
+    data << "INPUT FILE = " << input_filename << '\n';
+    data << "TENURE = " << tenure << '\n';
+    data << "PATIENCE = " << patience << '\n';
+    data << "ITERATIONS RAN = " << cur_iteration << '\n';
+    data << "REASON = " << ending_reason << '\n';
+    data << "RUNTIME = " << tabu_runtime << " SECONDS\n";
+    data << "BEST VALUE = " << globalBest << '\n';
+    out << data.str();
+    out.close();
+
+}
+
+
 
 
 // Busca tabu
@@ -76,6 +105,11 @@ void MDMTInstance::tabuSearch(int iterations){
 
         // If there's been no changes to the best global value
         if(iterations_since_last_improvement > patience){
+            if(iterations_since_last_improvement > MAX_GLOBAL_NEIGHBOUR_SEARCHES){
+                ending_reason = L"Global neighbourhood search count exceeded";
+                tabu_runtime = clock() / CLOCKS_PER_SEC;
+                return;
+            }
             moveToBestNeighbour();
             used_partition = false;
         }
@@ -95,7 +129,7 @@ void MDMTInstance::tabuSearch(int iterations){
         #ifdef DEBUG
         // if(BEST_VALUE_CHANGED || ((i % 100) == 0)){
         system("cls");
-        std::cout << "It " << cur_iteration << " - " << globalBest << "(Cur " << curBest << ')' << std::endl;
+        std::cout << "It " << cur_iteration+1 << " - " << globalBest << "(Cur " << curBest << ')' << std::endl;
         std::cout << "Neighbourhood function: " << (used_partition ? "Partition" : "Global")<< std::endl;
         
         #ifdef SHOW_SOLUTION_VECTOR
@@ -114,7 +148,8 @@ void MDMTInstance::tabuSearch(int iterations){
         #endif
 
     }
-
+    tabu_runtime = clock() / CLOCKS_PER_SEC;
+    ending_reason = L"Iteration limit reached";
 }
 
 
@@ -127,7 +162,6 @@ void MDMTInstance::generateInitialSolution(){
 
     //Set an element to one every x steps
     int step = (int) floor(L_size / l); 
-    std::cout << step << std::endl;
     for(int i = 0; i < (L_size - (L_size % step)); i+= step){
         solution[i] = 1;
     }

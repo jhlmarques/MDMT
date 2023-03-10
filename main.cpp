@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include "mdmtinstance.h"
 
 int wmain(int argc, wchar_t* argv[]) {
@@ -19,9 +20,12 @@ int wmain(int argc, wchar_t* argv[]) {
         std::cout << instance.getM_size() << ' ';
         std::cout << instance.getL_size() << ' ';
         std::cout << instance.getl_size() << std::endl;
-        std::cout << "--------------------------" << std::endl;
+        std::cout << "Running..." << std::endl;
         instance.tabuSearch(iterations);
-        std::cout << "Best value: " << instance.getglobalBest();
+        std::wcout << L"The search has stopped. Reason: " << instance.getEndingReason() << std::endl;
+        std::cout << "Best value: " << instance.getglobalBest() << std::endl;
+        instance.writeResultsToFile();
+
     }
     catch (std::exception& e){
         std::cerr << e.what();
