@@ -4,8 +4,8 @@
 
 int wmain(int argc, wchar_t* argv[]) {
     
-    if(argc < 4){
-        std::cout << "Usage: tabusearch <path-to-instance> <iterations> <tenure> <patience>"<< std::endl;
+    if(argc < 6){
+        std::cout << "Usage: tabusearch <path-to-instance> <iterations> <tenure> <patience> <solution_type>"<< std::endl;
         return -1;
     }
 
@@ -13,13 +13,14 @@ int wmain(int argc, wchar_t* argv[]) {
     int iterations = _wtoi(argv[2]);
     int tabu_tenure = _wtoi(argv[3]);
     int patience = _wtoi(argv[4]);
+    int initial_solution_type = _wtoi(argv[5]) == 1 ? INITIAL_SOLUTION_RANDOM : INITIAL_SOLUTION_STEPS;
      
     try{
-        MDMTInstance instance(filename, tabu_tenure, patience);
+        MDMTInstance instance(filename, tabu_tenure, patience, initial_solution_type);
         std::cout << "Instance info:" << std::endl;
-        std::cout << instance.getM_size() << ' ';
-        std::cout << instance.getL_size() << ' ';
-        std::cout << instance.getl_size() << std::endl;
+        std::cout << "|M| = " << instance.getM_size() << ' ';
+        std::cout << "|L| = " <<instance.getL_size() << ' ';
+        std::cout << "l = " << instance.getl_size() << std::endl;
         std::cout << "Running..." << std::endl;
         instance.tabuSearch(iterations);
         std::wcout << L"The search has stopped. Reason: " << instance.getEndingReason() << std::endl;

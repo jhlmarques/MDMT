@@ -3,14 +3,19 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <random>
 #include <time.h>
 
+#define INITIAL_SOLUTION_STEPS 0
+#define INITIAL_SOLUTION_RANDOM 1
 
 class MDMTInstance{
 
     private:
     const wchar_t* input_filename;
-    int tabu_runtime = 0;
+    int initialSolutionType;
+    time_t random_seed;
+    float tabu_runtime = 0;
     std::wstring ending_reason;
 
     int M_size;
@@ -39,7 +44,7 @@ class MDMTInstance{
     void addToTabu(int vertix_idx);
 
     public:
-    MDMTInstance(const wchar_t* filename, int tenure, int patience);
+    MDMTInstance(const wchar_t* filename, int tenure, int patience, int initialSolutionType);
     ~MDMTInstance();
     
     void writeResultsToFile();
@@ -50,6 +55,7 @@ class MDMTInstance{
     int getl_size();
     float getglobalBest();
     std::wstring getEndingReason();
+    
 
 
     void tabuSearch(int iterations);

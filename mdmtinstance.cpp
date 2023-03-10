@@ -1,17 +1,19 @@
 #include "mdmtinstance.h"
 
 
-#define MAX_GLOBAL_NEIGHBOUR_SEARCHES 3
+#define MAX_GLOBAL_NEIGHBOUR_SEARCHES tenure
 
 
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
 #include <iostream>
 //#define SHOW_STM
-#define SHOW_SOLUTION_VECTOR
+//#define SHOW_SOLUTION_VECTOR
+//#define SHOW_VALUES
+#define WARN_GLOBAL_SEARCH
 #endif
 
-MDMTInstance::MDMTInstance(const wchar_t* filename, int tenure, int patience){
+MDMTInstance::MDMTInstance(const wchar_t* filename, int tenure, int patience, int initialSolutionType){
 
     std::wifstream inst_stream(filename);
     if(!inst_stream){
@@ -19,6 +21,7 @@ MDMTInstance::MDMTInstance(const wchar_t* filename, int tenure, int patience){
     }
 
     input_filename = filename;
+    this->initialSolutionType = initialSolutionType;
     
     inst_stream >> M_size;
     inst_stream >> L_size;
@@ -71,20 +74,24 @@ std::wstring MDMTInstance::getEndingReason(){
 }
 
 
+
 void MDMTInstance::writeResultsToFile(){
     std::wstring output_filename = input_filename;
     size_t ext_pos = output_filename.find_last_of('.');
     output_filename.replace(ext_pos, output_filename.size(), L".out");
     
-    std::wofstream out(output_filename);
+    std::wofstream out(output_filename, "a");
     std::wostringstream data;
     data << "INPUT FILE = " << input_filename << '\n';
     data << "TENURE = " << tenure << '\n';
     data << "PATIENCE = " << patience << '\n';
+    data << "INITIAL SOLUTION = " << ((initialSolutionType == INITIAL_SOLUTION_STEPS) ? "STEPS" : "RANDOM") << std::endl;
+    data << "SEED = " << random_seed << '\n';
     data << "ITERATIONS RAN = " << cur_iteration << '\n';
     data << "REASON = " << ending_reason << '\n';
-    data << "RUNTIME = " << tabu_runtime << " SECONDS\n";
+    data << "TABU RUNTIME = " << tabu_runtime << " SECONDS\n";
     data << "BEST VALUE = " << globalBest << '\n';
+    data << "-----------------------------" << '\n';
     out << data.str();
     out.close();
 
@@ -100,16 +107,20 @@ void MDMTInstance::tabuSearch(int iterations){
 
     int iterations_since_last_improvement = 0;
     bool used_partition = false;
+    tabu_runtime = clock() / CLOCKS_PER_SEC;
 
     for(cur_iteration = 0; cur_iteration < iterations; cur_iteration++){
 
         // If there's been no changes to the best global value
         if(iterations_since_last_improvement > patience){
             if(iterations_since_last_improvement > MAX_GLOBAL_NEIGHBOUR_SEARCHES){
-                ending_reason = L"Global neighbourhood search count exceeded";
-                tabu_runtime = clock() / CLOCKS_PER_SEC;
+                ending_reason = L"Too many global neighbourhood searches";
+                tabu_runtime = (clock() / CLOCKS_PER_SEC) - tabu_runtime;
                 return;
             }
+            #ifdef WARN_GLOBAL_SEARCH
+            std::cout << "At it=" << cur_iteration << " : Using global neighbourhood" << std::endl;
+            #endif
             moveToBestNeighbour();
             used_partition = false;
         }
@@ -126,12 +137,13 @@ void MDMTInstance::tabuSearch(int iterations){
             iterations_since_last_improvement++;
         }
     
-        #ifdef DEBUG
+        #ifdef SHOW_VALUES
         // if(BEST_VALUE_CHANGED || ((i % 100) == 0)){
         system("cls");
         std::cout << "It " << cur_iteration+1 << " - " << globalBest << "(Cur " << curBest << ')' << std::endl;
         std::cout << "Neighbourhood function: " << (used_partition ? "Partition" : "Global")<< std::endl;
-        
+        #endif
+
         #ifdef SHOW_SOLUTION_VECTOR
         for(int j = 0; j < L_size; j++){
             std::cout << solution[j];
@@ -144,11 +156,9 @@ void MDMTInstance::tabuSearch(int iterations){
             std::cout << '|' << short_term_memory[j] << ':' << short_term_memory[j+1];
         }
         #endif
-        // }
-        #endif
 
     }
-    tabu_runtime = clock() / CLOCKS_PER_SEC;
+    tabu_runtime = (clock() / CLOCKS_PER_SEC) - tabu_runtime;
     ending_reason = L"Iteration limit reached";
 }
 
@@ -160,12 +170,29 @@ void MDMTInstance::generateInitialSolution(){
         solution[i] = 0;
     }
 
-    //Set an element to one every x steps
-    int step = (int) floor(L_size / l); 
-    for(int i = 0; i < (L_size - (L_size % step)); i+= step){
-        solution[i] = 1;
+    random_seed = time(NULL);
+    srand(random_seed);
+
+    if(initialSolutionType == INITIAL_SOLUTION_RANDOM){
+        //Generate random solution
+        int random_assignments = l;
+        int random_idx;
+        while(random_assignments > 0){
+            random_idx = rand() % L_size;
+            if(solution[random_idx] == 0){
+                solution[random_idx] = 1;
+                random_assignments--;
+            }
+        }
     }
 
+    if(initialSolutionType == INITIAL_SOLUTION_STEPS){
+        //Set an element to one every x steps
+        int step = (int) floor(L_size / l); 
+        for(int i = 0; i < (L_size - (L_size % step)); i+= step){
+            solution[i] = 1;
+        }
+    }
 }
 
 // Moves to the best neighbour in the partition (best value obtained by moving switching the values of two vertices
