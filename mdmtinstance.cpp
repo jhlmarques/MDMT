@@ -1,16 +1,16 @@
 #include "mdmtinstance.h"
 
 
-#define MAX_GLOBAL_NEIGHBOUR_SEARCHES tenure
+#define MAX_GLOBAL_NEIGHBOUR_SEARCHES 2*patience
 
 
 #define DEBUG
 #ifdef DEBUG
 #include <iostream>
-//#define SHOW_STM
-//#define SHOW_SOLUTION_VECTOR
-//#define SHOW_VALUES
 #define WARN_GLOBAL_SEARCH
+#define SHOW_VALUES
+#define SHOW_SOLUTION_VECTOR
+//#define SHOW_STM
 #endif
 
 MDMTInstance::MDMTInstance(const wchar_t* filename, int tenure, int patience, int initialSolutionType){
@@ -80,7 +80,7 @@ void MDMTInstance::writeResultsToFile(){
     size_t ext_pos = output_filename.find_last_of('.');
     output_filename.replace(ext_pos, output_filename.size(), L".out");
     
-    std::wofstream out(output_filename, "a");
+    std::wofstream out(output_filename, std::ios_base::app);
     std::wostringstream data;
     data << "INPUT FILE = " << input_filename << '\n';
     data << "TENURE = " << tenure << '\n';
@@ -219,7 +219,7 @@ void MDMTInstance::moveToBestNeighbourPartition(){
             solution[left_idx] = 1;
             aux = calculateCurrentValue();
             // Aspiration criteria: If this solution is better than the global solution, tabu status is ignored
-            if((aux > globalBest) || (!isTabu(left_idx) && aux > curBest)){
+            if((aux > globalBest) || (!isTabu(i) && aux > curBest)){
                 curBest = aux;
                 old_idx = i;
                 new_idx = left_idx;                
@@ -236,7 +236,7 @@ void MDMTInstance::moveToBestNeighbourPartition(){
             solution[right_idx] = 1;
             aux = calculateCurrentValue();
             // Aspiration criteria: If this solution is better than the global solution, tabu status is ignored
-            if((aux > globalBest) || (!isTabu(right_idx) && aux > curBest)){
+            if((aux > globalBest) || (!isTabu(i) && aux > curBest)){
                 curBest = aux;
                 old_idx = i;
                 new_idx = right_idx;                
@@ -283,7 +283,7 @@ void MDMTInstance::moveToBestNeighbour(){
             solution[left_idx] = 1;
             aux = calculateCurrentValue();
             // Aspiration criteria: If this solution is better than the global solution, tabu status is ignored
-            if((aux > globalBest) || (!isTabu(left_idx) && aux > curBest)){
+            if((aux > globalBest) || (!isTabu(i) && aux > curBest)){
                 curBest = aux;
                 old_idx = i;
                 new_idx = left_idx;                
@@ -301,7 +301,7 @@ void MDMTInstance::moveToBestNeighbour(){
             solution[right_idx] = 1;
             aux = calculateCurrentValue();
             // Aspiration criteria: If this solution is better than the global solution, tabu status is ignored
-            if((aux > globalBest) || (!isTabu(right_idx) && aux > curBest)){
+            if((aux > globalBest) || (!isTabu(i) && aux > curBest)){
                 curBest = aux;
                 old_idx = i;
                 new_idx = right_idx;                

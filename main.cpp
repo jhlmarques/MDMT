@@ -1,5 +1,6 @@
 #include <iostream>
-#include <string>
+#include <iomanip>
+#include <ctime>
 #include "mdmtinstance.h"
 
 int wmain(int argc, wchar_t* argv[]) {
@@ -16,14 +17,21 @@ int wmain(int argc, wchar_t* argv[]) {
     int initial_solution_type = _wtoi(argv[5]) == 1 ? INITIAL_SOLUTION_RANDOM : INITIAL_SOLUTION_STEPS;
      
     try{
+        time_t t;
+        tm * cur_time ;
+
         MDMTInstance instance(filename, tabu_tenure, patience, initial_solution_type);
         std::cout << "Instance info:" << std::endl;
         std::cout << "|M| = " << instance.getM_size() << ' ';
         std::cout << "|L| = " <<instance.getL_size() << ' ';
         std::cout << "l = " << instance.getl_size() << std::endl;
-        std::cout << "Running..." << std::endl;
+        t = time(nullptr);
+        cur_time = localtime(&t);
+        std::cout << asctime(cur_time) << " Running..." << std::endl;
         instance.tabuSearch(iterations);
-        std::wcout << L"The search has stopped. Reason: " << instance.getEndingReason() << std::endl;
+        t = time(nullptr);
+        cur_time = localtime(&t);
+        std::wcout << asctime(cur_time) << L" The search has stopped. Reason: " << instance.getEndingReason() << std::endl;
         std::cout << "Best value: " << instance.getglobalBest() << std::endl;
         instance.writeResultsToFile();
 
