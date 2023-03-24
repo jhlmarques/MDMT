@@ -1,0 +1,225 @@
+[Wed, 22 Mar 2023 19:18:33]
+Instance file: mdmt39.112.A.ins
+Solver info:
+* Solver : CPLEX
+
+* Status
+  Result count       : 1
+  Termination status : TIME_LIMIT
+  Message from the solver:
+  "time limit exceeded"
+
+* Candidate solution (result #1)
+  Primal status      : FEASIBLE_POINT
+  Dual status        : NO_SOLUTION
+  Objective value    : 5.09100e+03
+  Objective bound    : 4.08589e+04
+  Relative gap       : 7.02572e+00
+  Dual objective value : 4.08589e+04
+
+* Work counters
+  Solve time (sec)   : 1.80181e+03
+  Simplex iterations : 0
+  Barrier iterations : 0
+  Node count         : 4394
+----------------------------
+[Thu, 23 Mar 2023 02:32:38]
+Instance file: mdmt39.112.A.ins
+Solver info:
+* Solver : CPLEX
+
+* Status
+  Result count       : 1
+  Termination status : TIME_LIMIT
+  Message from the solver:
+  "time limit exceeded"
+
+* Candidate solution (result #1)
+  Primal status      : FEASIBLE_POINT
+  Dual status        : NO_SOLUTION
+  Objective value    : 5.70300e+03
+  Objective bound    : 4.08306e+04
+  Relative gap       : 6.15949e+00
+  Dual objective value : 4.08306e+04
+
+* Work counters
+  Solve time (sec)   : 2.73618e+03
+  Simplex iterations : 0
+  Barrier iterations : 0
+  Node count         : 9611
+----------------------------
+[Thu, 23 Mar 2023 03:19:19]
+Instance file: mdmt39.112.B.ins
+Solver info:
+* Solver : CPLEX
+
+* Status
+  Result count       : 1
+  Termination status : TIME_LIMIT
+  Message from the solver:
+  "time limit exceeded"
+
+* Candidate solution (result #1)
+  Primal status      : FEASIBLE_POINT
+  Dual status        : NO_SOLUTION
+  Objective value    : 6.03600e+03
+  Objective bound    : 4.07647e+04
+  Relative gap       : 5.75359e+00
+  Dual objective value : 4.07647e+04
+
+* Work counters
+  Solve time (sec)   : 2.70037e+03
+  Simplex iterations : 0
+  Barrier iterations : 0
+  Node count         : 25605
+----------------------------
+[Thu, 23 Mar 2023 04:04:57]
+Instance file: mdmt39.225.A.ins
+Solver info:
+* Solver : CPLEX
+
+* Status
+  Result count       : 1
+  Termination status : TIME_LIMIT
+  Message from the solver:
+  "time limit exceeded"
+
+* Candidate solution (result #1)
+  Primal status      : FEASIBLE_POINT
+  Dual status        : NO_SOLUTION
+  Objective value    : 4.16100e+03
+  Objective bound    : 2.79099e+04
+  Relative gap       : 5.70750e+00
+  Dual objective value : 2.79099e+04
+
+* Work counters
+  Solve time (sec)   : 2.70134e+03
+  Simplex iterations : 0
+  Barrier iterations : 0
+  Node count         : 19554
+----------------------------
+[Thu, 23 Mar 2023 04:51:59]
+Instance file: mdmt39.225.B.ins
+Solver info:
+* Solver : CPLEX
+
+* Status
+  Result count       : 1
+  Termination status : TIME_LIMIT
+  Message from the solver:
+  "time limit exceeded"
+
+* Candidate solution (result #1)
+  Primal status      : FEASIBLE_POINT
+  Dual status        : NO_SOLUTION
+  Objective value    : 3.75500e+03
+  Objective bound    : 2.79066e+04
+  Relative gap       : 6.43186e+00
+  Dual objective value : 2.79066e+04
+
+* Work counters
+  Solve time (sec)   : 2.74606e+03
+  Simplex iterations : 0
+  Barrier iterations : 0
+  Node count         : 7189
+----------------------------
+[Thu, 23 Mar 2023 05:38:59]
+Instance file: mdmt40.56.A.ins
+Solver info:
+* Solver : CPLEX
+
+* Status
+  Result count       : 1
+  Termination status : TIME_LIMIT
+  Message from the solver:
+  "time limit exceeded"
+
+* Candidate solution (result #1)
+  Primal status      : FEASIBLE_POINT
+  Dual status        : NO_SOLUTION
+  Objective value    : 8.03000e+03
+  Objective bound    : 2.95350e+04
+  Relative gap       : 2.67808e+00
+  Dual objective value : 2.95350e+04
+
+* Work counters
+  Solve time (sec)   : 2.70708e+03
+  Simplex iterations : 0
+  Barrier iterations : 0
+  Node count         : 17888
+----------------------------
+[Thu, 23 Mar 2023 06:25:11]
+Instance file: mdmt40.56.B.ins
+Solver info:
+* Solver : CPLEX
+
+* Status
+  Result count       : 1
+  Termination status : TIME_LIMIT
+  Message from the solver:
+  "time limit exceeded"
+
+* Candidate solution (result #1)
+  Primal status      : FEASIBLE_POINT
+  Dual status        : NO_SOLUTION
+  Objective value    : 7.76700e+03
+  Objective bound    : 2.95397e+04
+  Relative gap       : 2.80324e+00
+  Dual objective value : 2.95397e+04
+
+* Work counters
+  Solve time (sec)   : 2.70070e+03
+  Simplex iterations : 0
+  Barrier iterations : 0
+  Node count         : 20495
+----------------------------
+[Thu, 23 Mar 2023 07:10:51]
+Instance file: mdmt40.112.A.ins
+Solver info:
+* Solver : CPLEX
+
+* Status
+  Result count       : 1
+  Termination status : TIME_LIMIT
+  Message from the solver:
+  "time limit exceeded"
+
+* Candidate solution (result #1)
+  Primal status      : FEASIBLE_POINT
+  Dual status        : NO_SOLUTION
+  Objective value    : 6.03900e+03
+  Objective bound    : 2.46883e+04
+  Relative gap       : 3.08814e+00
+  Dual objective value : 2.46883e+04
+
+* Work counters
+  Solve time (sec)   : 2.70525e+03
+  Simplex iterations : 0
+  Barrier iterations : 0
+  Node count         : 15203
+----------------------------
+[Thu, 23 Mar 2023 07:56:34]
+Instance file: mdmt40.112.B.ins
+Solver info:
+* Solver : CPLEX
+
+* Status
+  Result count       : 1
+  Termination status : TIME_LIMIT
+  Message from the solver:
+  "time limit exceeded"
+
+* Candidate solution (result #1)
+  Primal status      : FEASIBLE_POINT
+  Dual status        : NO_SOLUTION
+  Objective value    : 5.99900e+03
+  Objective bound    : 2.47002e+04
+  Relative gap       : 3.11739e+00
+  Dual objective value : 2.47002e+04
+
+* Work counters
+  Solve time (sec)   : 2.70028e+03
+  Simplex iterations : 0
+  Barrier iterations : 0
+  Node count         : 18534
+----------------------------

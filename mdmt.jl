@@ -1,5 +1,5 @@
 using JuMP
-using GLPK
+using CPLEX
 using Logging
 using ArgParse
 using Dates
@@ -53,7 +53,8 @@ function parse_instance_file(filename::String)
 end
 
 function generate_MDMT_model(inst::MDMTInstance)
-    m = Model()
+    m = Model(CPLEX.Optimizer)
+    set_optimizer_attribute(m, "CPX_PARAM_EPINT", 1e-8)
     @variable(m, x[1:inst.M], Int)
     @variable(m, s[1:inst.L], Bin)
     @constraint(m, sum(s) == inst.l)
@@ -77,7 +78,7 @@ inst = parse_instance_file(args["inst"])
 model = generate_MDMT_model(inst)
 
 @info "[$(Dates.format(now(), RFC1123Format))] Optimizing..."
-set_optimizer(model, GLPK.Optimizer)
+
 if haskey(args, "timelimit")
     set_time_limit_sec(model, 60 * args["timelimit"])
     @info "[$(Dates.format(now(), RFC1123Format))] The solver has been set to a time limit of $(time_limit_sec(model) / 60) minutes"
