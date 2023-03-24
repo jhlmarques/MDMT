@@ -1,19 +1,16 @@
 #include "mdmtinstance.h"
 
-
-#define MAX_GLOBAL_NEIGHBOUR_SEARCHES 2*patience
-
-
-#define DEBUG
-#ifdef DEBUG
+//#define DEBUG_PRINTING
+#ifdef DEBUG_PRINTING
 #include <iostream>
 #define WARN_GLOBAL_SEARCH
 #define SHOW_VALUES
 #define SHOW_SOLUTION_VECTOR
-//#define SHOW_STM
+int switched_new, switched_old;
+
 #endif
 
-MDMTInstance::MDMTInstance(const wchar_t* filename, int tenure, int patience, int initialSolutionType){
+MDMTInstance::MDMTInstance(const wchar_t* filename, int tenure, int initialSolutionType){
 
     std::wifstream inst_stream(filename);
     if(!inst_stream){
@@ -41,7 +38,6 @@ MDMTInstance::MDMTInstance(const wchar_t* filename, int tenure, int patience, in
         short_term_memory[i] = 0;
     }
 
-    this->patience = patience;
     this->tenure = tenure;
 
 
@@ -69,9 +65,6 @@ float MDMTInstance::getglobalBest(){
     return globalBest;
 }
 
-std::wstring MDMTInstance::getEndingReason(){
-    return ending_reason;
-}
 
 
 
@@ -84,11 +77,9 @@ void MDMTInstance::writeResultsToFile(){
     std::wostringstream data;
     data << "INPUT FILE = " << input_filename << '\n';
     data << "TENURE = " << tenure << '\n';
-    data << "PATIENCE = " << patience << '\n';
     data << "INITIAL SOLUTION = " << ((initialSolutionType == INITIAL_SOLUTION_STEPS) ? "STEPS" : "RANDOM") << std::endl;
     data << "SEED = " << random_seed << '\n';
     data << "ITERATIONS RAN = " << cur_iteration << '\n';
-    data << "REASON = " << ending_reason << '\n';
     data << "TABU RUNTIME = " << tabu_runtime << " SECONDS\n";
     data << "BEST VALUE = " << globalBest << '\n';
     data << "-----------------------------" << '\n';
@@ -105,61 +96,34 @@ void MDMTInstance::tabuSearch(int iterations){
 
     generateInitialSolution();
 
-    int iterations_since_last_improvement = 0;
-    bool used_partition = false;
     tabu_runtime = clock() / CLOCKS_PER_SEC;
 
     for(cur_iteration = 0; cur_iteration < iterations; cur_iteration++){
 
-        // If there's been no changes to the best global value
-        if(iterations_since_last_improvement > patience){
-            if(iterations_since_last_improvement > MAX_GLOBAL_NEIGHBOUR_SEARCHES){
-                ending_reason = L"Too many global neighbourhood searches";
-                tabu_runtime = (clock() / CLOCKS_PER_SEC) - tabu_runtime;
-                return;
-            }
-            #ifdef WARN_GLOBAL_SEARCH
-            std::cout << "At it=" << cur_iteration << " : Using global neighbourhood" << std::endl;
-            #endif
-            moveToBestNeighbour();
-            used_partition = false;
-        }
-        else{
-            moveToBestNeighbourPartition();
-            used_partition = true;
-        }
+        moveToBestNeighbourPartition();
 
-        if(curBest > globalBest){
-            globalBest = curBest;
-            iterations_since_last_improvement = 0;
-        }
-        else{
-            iterations_since_last_improvement++;
-        }
-    
         #ifdef SHOW_VALUES
-        // if(BEST_VALUE_CHANGED || ((i % 100) == 0)){
         system("cls");
         std::cout << "It " << cur_iteration+1 << " - " << globalBest << "(Cur " << curBest << ')' << std::endl;
-        std::cout << "Neighbourhood function: " << (used_partition ? "Partition" : "Global")<< std::endl;
         #endif
 
         #ifdef SHOW_SOLUTION_VECTOR
         for(int j = 0; j < L_size; j++){
-            std::cout << solution[j];
+            if(j == switched_new){
+                std::cout << "\033[1;31;40mO\033[0m";
+            }
+            else if(j == switched_old){
+                std::cout << "\033[1;31;40mX\033[0m";
+            }
+            else{
+                std::cout << solution[j];
+            }
         }
         std::cout << std::endl;
-        #endif
-        #ifdef SHOW_STM
-        std::cout << "Short Term Memory:" << std::endl;
-        for(int j = 0; j < short_term_memory_length*2; j+=2){
-            std::cout << '|' << short_term_memory[j] << ':' << short_term_memory[j+1];
-        }
         #endif
 
     }
     tabu_runtime = (clock() / CLOCKS_PER_SEC) - tabu_runtime;
-    ending_reason = L"Iteration limit reached";
 }
 
 
@@ -199,39 +163,45 @@ void MDMTInstance::generateInitialSolution(){
 // with values 1 and 0 with no ones in between)
 void MDMTInstance::moveToBestNeighbourPartition(){
     float aux;
-    int old_idx;
+    int old_idx = -1;
     int new_idx = -1;
 
     curBest = 0;
 
     int left_idx, right_idx;
     for(int i = 0; i < L_size; i++){
+
         if(solution[i] != 1){
             continue;
         }
 
         // Check to the left
         solution[i] = 0;
-        for(int j = 1; j < i; j++){
+        for(int j = 1; j < L_size; j++){
             left_idx = i-j;
-            if((left_idx < 0) || (solution[left_idx] == 1)) break;
+            if(left_idx < 0) left_idx = L_size + left_idx; 
+
+            if(solution[left_idx] == 1) {break;}
             
             solution[left_idx] = 1;
             aux = calculateCurrentValue();
             // Aspiration criteria: If this solution is better than the global solution, tabu status is ignored
-            if((aux > globalBest) || (!isTabu(i) && aux > curBest)){
+            // if((aux > globalBest) || (!isTabu(i) && aux > curBest)){
+            if((!isTabu(i) && aux > curBest)){
                 curBest = aux;
                 old_idx = i;
-                new_idx = left_idx;                
+                new_idx = left_idx;  
             }
 
             solution[left_idx] = 0;
         }
 
         //Check to the right
-        for(int j = 1; j < L_size - i; j++){
+        for(int j = 1; j < L_size; j++){
             right_idx = i+j;
-            if((right_idx == L_size) || (solution[right_idx] == 1)) break;
+            if(right_idx >= L_size) right_idx -= L_size;
+
+            if(solution[right_idx] == 1) {break;}
             
             solution[right_idx] = 1;
             aux = calculateCurrentValue();
@@ -239,7 +209,7 @@ void MDMTInstance::moveToBestNeighbourPartition(){
             if((aux > globalBest) || (!isTabu(i) && aux > curBest)){
                 curBest = aux;
                 old_idx = i;
-                new_idx = right_idx;                
+                new_idx = right_idx;                  
             }
 
             solution[right_idx] = 0;
@@ -251,8 +221,18 @@ void MDMTInstance::moveToBestNeighbourPartition(){
     if(new_idx > -1){
         solution[new_idx] = 1;
         solution[old_idx] = 0;
-        addToTabu(new_idx);
+        addToTabu(old_idx);
     }
+
+    #ifdef DEBUG_PRINTING
+    switched_new = new_idx;
+    switched_old = old_idx;
+    #endif
+
+    if(curBest > globalBest){
+        globalBest = curBest;
+    }
+
 
 }
 
@@ -261,12 +241,11 @@ void MDMTInstance::moveToBestNeighbourPartition(){
 // Moves the solution to the best possible neighbour, considering all possible swaps
 void MDMTInstance::moveToBestNeighbour(){
     float aux;
-    int old_idx;
+    int old_idx = -1;
     int new_idx = -1;
 
     curBest = 0;
 
-    int left_idx, right_idx;
     for(int i = 0; i < L_size; i++){
         if(solution[i] != 1){
             continue;
@@ -274,40 +253,17 @@ void MDMTInstance::moveToBestNeighbour(){
 
         solution[i] = 0;
 
-        // Check to the left
-        solution[i] = 0;
-        for(int j = 1; j < i; j++){
-            left_idx = i-j;
-            if(solution[left_idx] == 1) continue;
-            
-            solution[left_idx] = 1;
+        for(int j = 0; j < L_size; j++){
+            if((j == i) || (solution[j] == 1)) continue;
+
+            solution[j] = 1;
             aux = calculateCurrentValue();
-            // Aspiration criteria: If this solution is better than the global solution, tabu status is ignored
-            if((aux > globalBest) || (!isTabu(i) && aux > curBest)){
+            if(aux > curBest){
                 curBest = aux;
                 old_idx = i;
-                new_idx = left_idx;                
+                new_idx = j;                  
             }
-
-            solution[left_idx] = 0;
-        }
-
-        //Check to the right
-        for(int j = 1; j < L_size - i; j++){
-            right_idx = i+j;
-            if(right_idx == L_size) break;
-            if(solution[right_idx] == 1) continue;
-            
-            solution[right_idx] = 1;
-            aux = calculateCurrentValue();
-            // Aspiration criteria: If this solution is better than the global solution, tabu status is ignored
-            if((aux > globalBest) || (!isTabu(i) && aux > curBest)){
-                curBest = aux;
-                old_idx = i;
-                new_idx = right_idx;                
-            }
-
-            solution[right_idx] = 0;
+            solution[j] = 0;
         }
 
         solution[i] = 1;
@@ -318,7 +274,13 @@ void MDMTInstance::moveToBestNeighbour(){
         solution[new_idx] = 1;
         solution[old_idx] = 0;
         addToTabu(new_idx);
+        addToTabu(old_idx);
     }
+
+    #ifdef DEBUG_PRINTING
+    switched_new = new_idx;
+    switched_old = old_idx;
+    #endif
 
 }
 
@@ -348,7 +310,7 @@ void MDMTInstance::moveToBestNeighbour(){
 
 // Checks if this vertix is tabu
  bool MDMTInstance::isTabu(int vertix_idx){
-    return short_term_memory[vertix_idx] < cur_iteration;
+    return short_term_memory[vertix_idx] > cur_iteration;
 }
 
 

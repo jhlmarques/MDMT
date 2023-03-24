@@ -16,7 +16,6 @@ class MDMTInstance{
     int initialSolutionType;
     time_t random_seed;
     float tabu_runtime = 0;
-    std::wstring ending_reason;
 
     int M_size;
     int L_size;
@@ -33,7 +32,6 @@ class MDMTInstance{
     
     // Tabu search parameters
     int tenure;
-    int patience;
 
     // Essential functions for tabu search
     void generateInitialSolution();
@@ -44,7 +42,7 @@ class MDMTInstance{
     void addToTabu(int vertix_idx);
 
     public:
-    MDMTInstance(const wchar_t* filename, int tenure, int patience, int initialSolutionType);
+    MDMTInstance(const wchar_t* filename, int tenure, int initialSolutionType);
     ~MDMTInstance();
     
     void writeResultsToFile();
@@ -54,9 +52,7 @@ class MDMTInstance{
     int getL_size();
     int getl_size();
     float getglobalBest();
-    std::wstring getEndingReason();
     
-
 
     void tabuSearch(int iterations);
 
