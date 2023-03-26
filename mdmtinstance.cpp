@@ -10,26 +10,21 @@ int switched_new, switched_old;
 
 #endif
 
-MDMTInstance::MDMTInstance(const wchar_t* filename, int tenure, int initialSolutionType){
+MDMTInstance::MDMTInstance(const char* output_filename, int tenure, int initialSolutionType){
 
-    std::wifstream inst_stream(filename);
-    if(!inst_stream){
-        throw std::runtime_error("Could not open file");
-    }
-
-    input_filename = filename;
+    this->output_filename = output_filename;
     this->initialSolutionType = initialSolutionType;
     
-    inst_stream >> M_size;
-    inst_stream >> L_size;
-    inst_stream >> l;
+    std::cin >> M_size;
+    std::cin >> L_size;
+    std::cin >> l;
     
     solution = new int [L_size];
     distances = new float [M_size * L_size];
     
     for(int i = 0; i < M_size; i++){
         for(int j = 0; j < L_size; j++){
-            inst_stream >> distances[i*M_size + j];
+            std::cin >> distances[i*M_size + j];
         }
     }
 
@@ -69,19 +64,16 @@ float MDMTInstance::getglobalBest(){
 
 
 void MDMTInstance::writeResultsToFile(){
-    std::wstring output_filename = input_filename;
-    size_t ext_pos = output_filename.find_last_of('.');
-    output_filename.replace(ext_pos, output_filename.size(), L".out");
     
-    std::wofstream out(output_filename, std::ios_base::app);
-    std::wostringstream data;
-    data << "INPUT FILE = " << input_filename << '\n';
+    std::ofstream out(output_filename, std::ios_base::app);
+    std::ostringstream data;
+    data << "RESULTS FOR INSTANCE WITH" << " |M|=" << getM_size() << " |L|=" << getL_size() << " l=" << getl_size() << std::endl;
     data << "TENURE = " << tenure << '\n';
-    data << "INITIAL SOLUTION = " << ((initialSolutionType == INITIAL_SOLUTION_STEPS) ? "STEPS" : "RANDOM") << std::endl;
-    data << "SEED = " << random_seed << '\n';
+    data << "INITIAL SOLUTION GENERATION: = " << ((initialSolutionType == INITIAL_SOLUTION_STEPS) ? "STEPS" : "RANDOM") << std::endl;
+    data << "SEED (IF RANDOM) = " << random_seed << '\n';
     data << "ITERATIONS RAN = " << cur_iteration << '\n';
     data << "TABU RUNTIME = " << tabu_runtime << " SECONDS\n";
-    data << "BEST VALUE = " << globalBest << '\n';
+    data << "BEST KNOWN VALUE = " << globalBest << '\n';
     data << "-----------------------------" << '\n';
     out << data.str();
     out.close();

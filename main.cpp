@@ -3,17 +3,17 @@
 #include <ctime>
 #include "mdmtinstance.h"
 
-int wmain(int argc, wchar_t* argv[]) {
+int main(int argc, char* argv[]) {
     
-    if(argc < 5){
-        std::cout << "Usage: tabusearch <path-to-instance> <iterations> <tenure> <solution_type>"<< std::endl;
+    if(argc != 5){
+        std::cout << "Usage: tabusearch <result-file> <iterations> <tenure> <solution_type>"<< std::endl;
         return -1;
     }
 
-    wchar_t* filename = argv[1];
-    int iterations = _wtoi(argv[2]);
-    int tabu_tenure = _wtoi(argv[3]);
-    int initial_solution_type = _wtoi(argv[4]) == 1 ? INITIAL_SOLUTION_RANDOM : INITIAL_SOLUTION_STEPS;
+    char* filename = argv[1];
+    int iterations = atoi(argv[2]);
+    int tabu_tenure = atoi(argv[3]);
+    int initial_solution_type = atoi(argv[4]) == 1 ? INITIAL_SOLUTION_RANDOM : INITIAL_SOLUTION_STEPS;
      
     try{
         time_t t;
@@ -24,13 +24,8 @@ int wmain(int argc, wchar_t* argv[]) {
         std::cout << "|M| = " << instance.getM_size() << ' ';
         std::cout << "|L| = " <<instance.getL_size() << ' ';
         std::cout << "l = " << instance.getl_size() << std::endl;
-        t = time(nullptr);
-        cur_time = localtime(&t);
-        std::cout << asctime(cur_time) << " Running..." << std::endl;
+        std::cout << "Running..." << std::endl;
         instance.tabuSearch(iterations);
-        t = time(nullptr);
-        cur_time = localtime(&t);
-        std::wcout << asctime(cur_time) << L" The search has stopped." << std::endl;
         std::cout << "Best value: " << instance.getglobalBest() << std::endl;
         instance.writeResultsToFile();
 

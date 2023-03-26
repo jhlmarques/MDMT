@@ -1,7 +1,8 @@
 #ifndef MDMTINSTANCE_H
 #define MDMTINSTANCE_H
-#include <fstream>
+#include <iostream>
 #include <string>
+#include <fstream>
 #include <sstream>
 #include <random>
 #include <time.h>
@@ -12,7 +13,7 @@
 class MDMTInstance{
 
     private:
-    const wchar_t* input_filename;
+    std::string output_filename;
     int initialSolutionType;
     time_t random_seed;
     float tabu_runtime = 0;
@@ -42,7 +43,7 @@ class MDMTInstance{
     void addToTabu(int vertix_idx);
 
     public:
-    MDMTInstance(const wchar_t* filename, int tenure, int initialSolutionType);
+    MDMTInstance(const char* output_filename, int tenure, int initialSolutionType);
     ~MDMTInstance();
     
     void writeResultsToFile();
