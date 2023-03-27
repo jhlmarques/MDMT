@@ -5,8 +5,8 @@
 
 int main(int argc, char* argv[]) {
     
-    if(argc != 5){
-        std::cout << "Usage: tabusearch <result-file> <iterations> <tenure> <solution_type>"<< std::endl;
+    if(argc != 7){
+        std::cout << "Usage: tabusearch <result-file> <iterations> <tenure> <solution_type> <random_seed> <use_aspiration_criteria>"<< std::endl;
         return -1;
     }
 
@@ -14,12 +14,14 @@ int main(int argc, char* argv[]) {
     int iterations = atoi(argv[2]);
     int tabu_tenure = atoi(argv[3]);
     int initial_solution_type = atoi(argv[4]) == 1 ? INITIAL_SOLUTION_RANDOM : INITIAL_SOLUTION_STEPS;
+    int random_seed = atoi(argv[5]);
+    int use_aspiration_criteria = atoi(argv[6]);
      
     try{
         time_t t;
         tm * cur_time ;
 
-        MDMTInstance instance(filename, tabu_tenure, initial_solution_type);
+        MDMTInstance instance(filename, tabu_tenure, initial_solution_type, random_seed, use_aspiration_criteria);
         std::cout << "Instance info:" << std::endl;
         std::cout << "|M| = " << instance.getM_size() << ' ';
         std::cout << "|L| = " <<instance.getL_size() << ' ';

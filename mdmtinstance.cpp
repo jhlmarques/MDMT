@@ -10,10 +10,12 @@ int switched_new, switched_old;
 
 #endif
 
-MDMTInstance::MDMTInstance(const char* output_filename, int tenure, int initialSolutionType){
+MDMTInstance::MDMTInstance(const char* output_filename, int tenure, int initialSolutionType, int random_seed, int use_aspiration_criteria){
 
     this->output_filename = output_filename;
     this->initialSolutionType = initialSolutionType;
+    this->random_seed = random_seed;
+    this->use_aspiration_criteria = use_aspiration_criteria;
     
     std::cin >> M_size;
     std::cin >> L_size;
@@ -70,7 +72,8 @@ void MDMTInstance::writeResultsToFile(){
     data << "RESULTS FOR INSTANCE WITH" << " |M|=" << getM_size() << " |L|=" << getL_size() << " l=" << getl_size() << std::endl;
     data << "TENURE = " << tenure << '\n';
     data << "INITIAL SOLUTION GENERATION: = " << ((initialSolutionType == INITIAL_SOLUTION_STEPS) ? "STEPS" : "RANDOM") << std::endl;
-    data << "SEED (IF RANDOM) = " << random_seed << '\n';
+    data << "RANDOM SEED = " << random_seed << '\n';
+    data << "FACTORED ASPIRATION CRITERIA = " << use_aspiration_criteria << '\n';
     data << "ITERATIONS RAN = " << cur_iteration << '\n';
     data << "TABU RUNTIME = " << tabu_runtime << " SECONDS\n";
     data << "BEST KNOWN VALUE = " << globalBest << '\n';
@@ -118,6 +121,13 @@ void MDMTInstance::tabuSearch(int iterations){
     tabu_runtime = (clock() / CLOCKS_PER_SEC) - tabu_runtime;
 }
 
+// Checks if the current solution meets the aspiration criteria using its value
+// Aspiration criteria: If this solution is better than the global solution, tabu status is ignored
+bool MDMTInstance::checkAspirationCriteria(int value){
+    if(use_aspiration_criteria) return value > globalBest;
+    return false;
+}
+
 
 // Generates an initial solution
 void MDMTInstance::generateInitialSolution(){
@@ -126,7 +136,6 @@ void MDMTInstance::generateInitialSolution(){
         solution[i] = 0;
     }
 
-    random_seed = time(NULL);
     srand(random_seed);
 
     if(initialSolutionType == INITIAL_SOLUTION_RANDOM){
@@ -144,7 +153,7 @@ void MDMTInstance::generateInitialSolution(){
 
     if(initialSolutionType == INITIAL_SOLUTION_STEPS){
         //Set an element to one every x steps
-        int step = (int) floor(L_size / l); 
+        int step = (int) floor(L_size / l);
         for(int i = 0; i < (L_size - (L_size % step)); i+= step){
             solution[i] = 1;
         }
@@ -177,9 +186,8 @@ void MDMTInstance::moveToBestNeighbourPartition(){
             
             solution[left_idx] = 1;
             aux = calculateCurrentValue();
-            // Aspiration criteria: If this solution is better than the global solution, tabu status is ignored
-            // if((aux > globalBest) || (!isTabu(i) && aux > curBest)){
-            if((!isTabu(i) && aux > curBest)){
+
+            if(checkAspirationCriteria(aux) || (!isTabu(i) && aux > curBest)){
                 curBest = aux;
                 old_idx = i;
                 new_idx = left_idx;  
@@ -197,8 +205,8 @@ void MDMTInstance::moveToBestNeighbourPartition(){
             
             solution[right_idx] = 1;
             aux = calculateCurrentValue();
-            // Aspiration criteria: If this solution is better than the global solution, tabu status is ignored
-            if((aux > globalBest) || (!isTabu(i) && aux > curBest)){
+
+            if(checkAspirationCriteria(aux) || (!isTabu(i) && aux > curBest)){
                 curBest = aux;
                 old_idx = i;
                 new_idx = right_idx;                  
