@@ -223,3 +223,53 @@ Solver info:
   Barrier iterations : 0
   Node count         : 18534
 ----------------------------
+[Mon, 27 Mar 2023 04:04:08]
+Instance file: mdmt40.225.A.ins
+Solver info:
+* Solver : CPLEX
+
+* Status
+  Result count       : 1
+  Termination status : TIME_LIMIT
+  Message from the solver:
+  "time limit exceeded"
+
+* Candidate solution (result #1)
+  Primal status      : FEASIBLE_POINT
+  Dual status        : NO_SOLUTION
+  Objective value    : 3.95500e+03
+  Objective bound    : 1.81860e+04
+  Relative gap       : 3.59824e+00
+  Dual objective value : 1.81860e+04
+
+* Work counters
+  Solve time (sec)   : 2.70068e+03
+  Simplex iterations : 0
+  Barrier iterations : 0
+  Node count         : 2490
+----------------------------
+[Mon, 27 Mar 2023 04:49:52]
+Instance file: mdmt40.225.B.ins
+Solver info:
+* Solver : CPLEX
+
+* Status
+  Result count       : 1
+  Termination status : TIME_LIMIT
+  Message from the solver:
+  "time limit exceeded"
+
+* Candidate solution (result #1)
+  Primal status      : FEASIBLE_POINT
+  Dual status        : NO_SOLUTION
+  Objective value    : 4.22300e+03
+  Objective bound    : 1.81248e+04
+  Relative gap       : 3.29194e+00
+  Dual objective value : 1.81248e+04
+
+* Work counters
+  Solve time (sec)   : 2.70029e+03
+  Simplex iterations : 0
+  Barrier iterations : 0
+  Node count         : 2627
+----------------------------

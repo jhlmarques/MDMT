@@ -18,8 +18,6 @@ int main(int argc, char* argv[]) {
     int use_aspiration_criteria = atoi(argv[6]);
      
     try{
-        time_t t;
-        tm * cur_time ;
 
         MDMTInstance instance(filename, tabu_tenure, initial_solution_type, random_seed, use_aspiration_criteria);
         std::cout << "Instance info:" << std::endl;

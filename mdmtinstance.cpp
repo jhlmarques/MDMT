@@ -158,6 +158,9 @@ void MDMTInstance::generateInitialSolution(){
             solution[i] = 1;
         }
     }
+
+    std::cout << "Initial solution value: " << calculateCurrentValue() << std::endl;
+
 }
 
 // Moves to the best neighbour in the partition (best value obtained by moving switching the values of two vertices
